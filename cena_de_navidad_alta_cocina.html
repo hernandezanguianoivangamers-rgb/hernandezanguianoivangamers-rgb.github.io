@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cena de Navidad - Alta Cocina</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            emeraldDeep: '#061511',
+            emeraldCard: '#0c241e',
+            sageAccent: '#86a898',
+            goldWarm: '#d4af37',
+            goldSoft: '#f3e5ab',
+            creamSoft: '#f8f5ee',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --bg-base: #05120e;
+      --glass-bg: rgba(14, 38, 31, 0.56);
+      --glass-bg-hover: rgba(20, 52, 43, 0.72);
+      --glass-border: rgba(212, 175, 55, 0.24);
+      --glass-highlight: rgba(255, 255, 255, 0.08);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(28, 79, 63, 0.45) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(212, 175, 55, 0.14) 0%, transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(18, 56, 45, 0.5) 0%, transparent 55%);
+      background-attachment: fixed;
+      color: #f8f5ee;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .liquid-glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 18px 45px -12px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 0 var(--glass-highlight);
+    }
+
+    .liquid-glass-subtle {
+      background: rgba(10, 29, 24, 0.48);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(134, 168, 152, 0.2);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .dish-card {
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .dish-card:hover {
+      transform: translateY(-3px);
+      background: var(--glass-bg-hover);
+      border-color: rgba(212, 175, 55, 0.48);
+    }
+
+    .dish-card.selected {
+      background: linear-gradient(145deg, rgba(28, 69, 57, 0.85), rgba(14, 38, 31, 0.92));
+      border: 1.5px solid #d4af37;
+      box-shadow:
+        0 12px 32px -6px rgba(212, 175, 55, 0.22),
+        inset 0 0 0 1px rgba(212, 175, 55, 0.35);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #f6e299 0%, #d4af37 50%, #b58d22 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #e2c15a 0%, #c69c2b 100%);
+      color: #071712;
+      box-shadow: 0 10px 25px -6px rgba(212, 175, 55, 0.45);
+      transition: all 0.25s ease;
+    }
+
+    .btn-gold:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+      box-shadow: 0 14px 30px -6px rgba(212, 175, 55, 0.6);
+    }
+
+    .btn-gold:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: rgba(243, 229, 171, 0.16);
+      user-select: none;
+      pointer-events: none;
+      z-index: 0;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(105vh) rotate(360deg);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-amber-400/30 selection:text-amber-100">
+  <div id="snow-container" aria-hidden="true"></div>
+
+  <!-- Toast / Notificación flotante -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-sm rounded-2xl liquid-glass px-5 py-4 text-sm text-creamSoft shadow-2xl transition-all">
+    <div class="flex items-start gap-3">
+      <span id="toast-icon" class="text-lg text-amber-300">✦</span>
+      <div>
+        <p id="toast-title" class="font-semibold text-amber-200"></p>
+        <p id="toast-msg" class="mt-0.5 text-xs text-stone-200/90 leading-relaxed"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra Superior -->
+  <header class="relative z-20 mx-auto max-w-6xl px-4 pt-5 sm:px-6 lg:px-8">
+    <div class="liquid-glass rounded-3xl px-5 py-4 sm:px-7 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5 cursor-pointer" onclick="goHome()">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-400/15 border border-amber-300/30 text-amber-300 shadow-inner">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg>
+        </div>
+        <div>
+          <span class="block text-[11px] uppercase tracking-[0.22em] text-sageAccent font-semibold">Edición Familiar Privada</span>
+          <h1 class="font-serif text-lg sm:text-xl font-semibold gold-gradient-text">Cena de Navidad · Alta Cocina</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <div class="hidden md:flex items-center gap-2 rounded-full bg-emerald-950/70 border border-sageAccent/25 px-3.5 py-1.5 text-xs text-sageAccent">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="header-progress-text">0 de 7 familiares listos</span>
+        </div>
+
+        <button id="btn-switch-guest" onclick="goHome()" class="hidden rounded-full border border-sageAccent/30 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-medium text-creamSoft transition">
+          Cambiar Invitado
+        </button>
+
+        <button id="btn-host-panel" onclick="toggleHostView()" class="rounded-full border border-amber-300/35 bg-amber-400/10 hover:bg-amber-400/20 px-4 py-2 text-xs font-semibold text-amber-200 transition flex items-center gap-2">
+          <svg class="h-4 w-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+          </svg>
+          <span id="host-btn-label">Panel de Ángel</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 pb-20">
+    <!-- VISTA 1: SELECCIÓN DE INVITADO -->
+    <section id="view-selector" class="fade-in">
+      <div class="mx-auto max-w-3xl text-center mb-10">
+        <div class="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-1.5 text-xs font-medium text-amber-200 mb-4">
+          <span>✦</span> Nochebuena · Menú Degustación de 3 Tiempos <span>✦</span>
+        </div>
+        <h2 class="font-serif text-3xl sm:text-5xl font-semibold tracking-tight text-creamSoft leading-tight">
+          Una velada diseñada y cocinada <span class="italic gold-gradient-text">especialmente para ti</span>
+        </h2>
+        <p class="mt-4 text-sm sm:text-base text-stone-300/90 max-w-2xl mx-auto leading-relaxed">
+          Selecciona tu nombre para descubrir nuestra carta navideña de alta cocina italiana, francesa, mexicana contemporánea y gourmet internacional. Elige tus tres tiempos favoritos y Ángel los preparará personalmente para ti.
+        </p>
+      </div>
+
+      <!-- Tarjetas de los 7 integrantes -->
+      <div id="guest-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto"></div>
+
+      <!-- Barra de estado familiar -->
+      <div class="mt-10 max-w-3xl mx-auto liquid-glass-subtle rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sageAccent/15 border border-sageAccent/30 text-sageAccent font-serif text-lg font-bold">
+            <span id="family-count-badge">0/7</span>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-creamSoft">Estado de confirmaciones familiares</p>
+            <p id="family-status-sub" class="text-xs text-stone-300/80">Cuando los 7 integrantes elijan, el menú consolidado quedará listo para Ángel.</p>
+          </div>
+        </div>
+        <button onclick="toggleHostView()" class="w-full sm:w-auto rounded-2xl border border-amber-300/35 bg-amber-400/10 hover:bg-amber-400/20 px-5 py-2.5 text-xs font-semibold text-amber-200 transition">
+          Ver Resumen y Carta del 24 Dic
+        </button>
+      </div>
+    </section>
+
+    <!-- VISTA 2: BIENVENIDA Y MENÚ DE ALTA COCINA -->
+    <section id="view-menu" class="hidden fade-in">
+      <!-- Banner de Bienvenida Personalizada -->
+      <div class="liquid-glass rounded-3xl p-6 sm:p-9 mb-8 relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-amber-400/10 blur-2xl pointer-events-none"></div>
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <p class="text-xs uppercase tracking-[0.25em] text-amber-300 font-semibold mb-2">Invitado de Honor</p>
+            <h2 id="welcome-headline" class="font-serif text-2xl sm:text-4xl font-semibold text-creamSoft leading-snug">
+              Hola, Bienvenido a la alta cocina para la cena de navidad
+            </h2>
+            <p id="welcome-full-name" class="mt-2 text-sm text-sageAccent font-medium"></p>
+            <p class="mt-3 text-sm text-stone-300/90 max-w-2xl leading-relaxed">
+              Selecciona <strong class="text-amber-200">1 Entrada</strong>, <strong class="text-amber-200">1 Plato Fuerte</strong> y <strong class="text-amber-200">1 Postre</strong>. Puedes filtrar por estilo culinario o combinar cocinas del mundo a tu gusto.
+            </p>
+          </div>
+
+          <!-- Indicador rápido de selección -->
+          <div class="liquid-glass-subtle rounded-2xl p-4 sm:min-w-[260px] border border-amber-300/25">
+            <p class="text-[11px] uppercase tracking-wider text-sageAccent font-semibold mb-2.5">Tu Menú Seleccionado</p>
+            <ul class="space-y-2 text-xs">
+              <li class="flex items-center justify-between gap-2">
+                <span class="text-stone-400">1. Entrada:</span>
+                <span id="status-starter" class="font-medium text-amber-200/70 truncate max-w-[155px]">Pendiente</span>
+              </li>
+              <li class="flex items-center justify-between gap-2">
+                <span class="text-stone-400">2. Plato Fuerte:</span>
+                <span id="status-main" class="font-medium text-amber-200/70 truncate max-w-[155px]">Pendiente</span>
+              </li>
+              <li class="flex items-center justify-between gap-2">
+                <span class="text-stone-400">3. Postre:</span>
+                <span id="status-dessert" class="font-medium text-amber-200/70 truncate max-w-[155px]">Pendiente</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Filtros por Estilo Culinario -->
+        <div class="mt-7 pt-5 border-t border-white/10 flex flex-wrap items-center gap-2">
+          <span class="text-xs text-stone-400 mr-1">Filtrar estilo:</span>
+          <button onclick="setCuisineFilter('Todas')" data-filter="Todas" class="filter-pill active rounded-full px-4 py-1.5 text-xs font-medium bg-amber-400 text-emeraldDeep transition">Todas las Cocinas</button>
+          <button onclick="setCuisineFilter('Italiana')" data-filter="Italiana" class="filter-pill rounded-full px-4 py-1.5 text-xs font-medium bg-white/5 text-stone-200 hover:bg-white/10 border border-white/10 transition">🇮🇹 Cocina Italiana</button>
+          <button onclick="setCuisineFilter('Francesa')" data-filter="Francesa" class="filter-pill rounded-full px-4 py-1.5 text-xs font-medium bg-white/5 text-stone-200 hover:bg-white/10 border border-white/10 transition">🇫🇷 Cocina Francesa</button>
+          <button onclick="setCuisineFilter('Alta Cocina Mexicana')" data-filter="Alta Cocina Mexicana" class="filter-pill rounded-full px-4 py-1.5 text-xs font-medium bg-white/5 text-stone-200 hover:bg-white/10 border border-white/10 transition">🇲🇽 Alta Cocina Mexicana</button>
+          <button onclick="setCuisineFilter('Gourmet')" data-filter="Gourmet" class="filter-pill rounded-full px-4 py-1.5 text-xs font-medium bg-white/5 text-stone-200 hover:bg-white/10 border border-white/10 transition">✨ Gourmet Internacional</button>
+        </div>
+      </div>
+
+      <!-- TIEMPO 1: ENTRADAS -->
+      <div class="mb-12">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <span class="text-xs uppercase tracking-[0.2em] text-amber-300 font-semibold">Primer Tiempo</span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-semibold text-creamSoft">Entradas de Autor</h3>
+          </div>
+          <span id="badge-starter" class="rounded-full bg-white/5 border border-white/15 px-3.5 py-1 text-xs text-stone-300">Elige 1 opción</span>
+        </div>
+        <div id="grid-starters" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+
+      <!-- TIEMPO 2: PLATOS FUERTES -->
+      <div class="mb-12">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <span class="text-xs uppercase tracking-[0.2em] text-amber-300 font-semibold">Segundo Tiempo</span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-semibold text-creamSoft">Platos Fuertes</h3>
+          </div>
+          <span id="badge-main" class="rounded-full bg-white/5 border border-white/15 px-3.5 py-1 text-xs text-stone-300">Elige 1 opción</span>
+        </div>
+        <div id="grid-mains" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+
+      <!-- TIEMPO 3: POSTRES -->
+      <div class="mb-12">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <span class="text-xs uppercase tracking-[0.2em] text-amber-300 font-semibold">Tercer Tiempo</span>
+            <h3 class="font-serif text-2xl sm:text-3xl font-semibold text-creamSoft">Postres de Alta Repostería</h3>
+          </div>
+          <span id="badge-dessert" class="rounded-full bg-white/5 border border-white/15 px-3.5 py-1 text-xs text-stone-300">Elige 1 opción</span>
+        </div>
+        <div id="grid-desserts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+
+      <!-- RESUMEN Y FORMULARIO FINAL DE CORREO ELECTRÓNICO -->
+      <div id="checkout-section" class="liquid-glass rounded-3xl p-6 sm:p-9 max-w-3xl mx-auto border border-amber-300/35">
+        <div class="text-center mb-6">
+          <span class="text-xs uppercase tracking-[0.22em] text-amber-300 font-semibold">Paso Final</span>
+          <h3 class="font-serif text-2xl sm:text-3xl font-semibold text-creamSoft mt-1">Tu Selección Navideña</h3>
+          <p class="text-xs sm:text-sm text-stone-300/85 mt-1.5">Verifica tus tres tiempos elegidos y registra únicamente tu correo electrónico.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-7">
+          <div class="rounded-2xl bg-emerald-950/60 border border-white/10 p-4">
+            <span class="text-[11px] uppercase tracking-wider text-sageAccent font-semibold">Entrada</span>
+            <p id="summary-starter" class="mt-1 font-serif text-sm font-semibold text-creamSoft">Aún sin seleccionar</p>
+            <p id="summary-starter-tag" class="mt-1 text-[11px] text-amber-300/80"></p>
+          </div>
+          <div class="rounded-2xl bg-emerald-950/60 border border-white/10 p-4">
+            <span class="text-[11px] uppercase tracking-wider text-sageAccent font-semibold">Plato Fuerte</span>
+            <p id="summary-main" class="mt-1 font-serif text-sm font-semibold text-creamSoft">Aún sin seleccionar</p>
+            <p id="summary-main-tag" class="mt-1 text-[11px] text-amber-300/80"></p>
+          </div>
+          <div class="rounded-2xl bg-emerald-950/60 border border-white/10 p-4">
+            <span class="text-[11px] uppercase tracking-wider text-sageAccent font-semibold">Postre</span>
+            <p id="summary-dessert" class="mt-1 font-serif text-sm font-semibold text-creamSoft">Aún sin seleccionar</p>
+            <p id="summary-dessert-tag" class="mt-1 text-[11px] text-amber-300/80"></p>
+          </div>
+        </div>
+
+        <form id="email-form" onsubmit="handleConfirmMenu(event)" class="space-y-4">
+          <div>
+            <label for="guest-email" class="block text-xs font-semibold uppercase tracking-wider text-amber-200 mb-2">
+              Tu Correo Electrónico
+            </label>
+            <input
+              type="email"
+              id="guest-email"
+              required
+              placeholder="ejemplo@correo.com"
+              class="w-full rounded-2xl bg-emerald-950/80 border border-amber-300/30 px-4 py-3.5 text-sm text-creamSoft placeholder-stone-400 focus:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-300/20"
+            />
+            <p class="mt-2 text-xs text-stone-300/80">
+              A este correo recibirás el <strong class="text-amber-200">24 de diciembre a las 11:59 PM</strong> una carta especial de agradecimiento escrita por Ángel.
+            </p>
+          </div>
+
+          <button type="submit" id="btn-confirm-menu" class="btn-gold w-full rounded-2xl py-4 px-6 text-sm font-bold tracking-wide">
+            Confirmar mi Menú Navideño
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VISTA 3: CONFIRMACIÓN EXITOSA DEL INVITADO -->
+    <section id="view-confirmation" class="hidden fade-in max-w-2xl mx-auto">
+      <div class="liquid-glass rounded-3xl p-7 sm:p-10 text-center border border-amber-300/40">
+        <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-300 text-2xl">
+          ✦
+        </div>
+        <span class="text-xs uppercase tracking-[0.25em] text-amber-300 font-semibold">Menú Registrado</span>
+        <h2 id="conf-title" class="font-serif text-2xl sm:text-4xl font-semibold text-creamSoft mt-2">
+          ¡Gracias por tu elección!
+        </h2>
+        <p id="conf-message" class="mt-4 text-sm sm:text-base text-stone-200/90 leading-relaxed">
+          Tu menú ha quedado registrado para que Ángel te lo cocine personalmente esta Navidad.
+        </p>
+
+        <div class="mt-6 rounded-2xl bg-emerald-950/70 border border-white/10 p-5 text-left space-y-2.5 text-xs sm:text-sm">
+          <div class="flex justify-between gap-4 border-b border-white/10 pb-2">
+            <span class="text-stone-400">Entrada:</span>
+            <span id="conf-starter" class="font-semibold text-creamSoft text-right"></span>
+          </div>
+          <div class="flex justify-between gap-4 border-b border-white/10 pb-2">
+            <span class="text-stone-400">Plato Fuerte:</span>
+            <span id="conf-main" class="font-semibold text-creamSoft text-right"></span>
+          </div>
+          <div class="flex justify-between gap-4 border-b border-white/10 pb-2">
+            <span class="text-stone-400">Postre:</span>
+            <span id="conf-dessert" class="font-semibold text-creamSoft text-right"></span>
+          </div>
+          <div class="flex justify-between gap-4 pt-1">
+            <span class="text-stone-400">Correo para carta del 24 Dic (11:59 PM):</span>
+            <span id="conf-email" class="font-semibold text-amber-300 text-right break-all"></span>
+          </div>
+        </div>
+
+        <!-- Aviso especial cuando los 7 familiares ya completaron -->
+        <div id="all-seven-banner" class="hidden mt-6 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-emerald-500/20 border border-amber-300/50 p-5 text-left">
+          <p class="text-xs font-bold uppercase tracking-wider text-amber-300">✦ ¡Toda la familia ha elegido (7 de 7)! ✦</p>
+          <p class="mt-1.5 text-xs sm:text-sm text-creamSoft leading-relaxed">
+            Los 7 integrantes ya registraron sus platillos. El reporte consolidado con todas las elecciones y correos está listo para enviarse a <strong class="text-amber-200">hernandezanguianoivangamers@gmail.com</strong>.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2.5">
+            <a id="conf-mailto-angel" href="#" class="btn-gold rounded-xl px-4 py-2.5 text-xs font-bold inline-flex items-center gap-2">
+              Enviar Reporte Completo a Ángel
+            </a>
+            <button onclick="copyConsolidatedReport()" class="rounded-xl border border-amber-300/40 bg-white/5 hover:bg-white/10 px-4 py-2.5 text-xs font-semibold text-amber-200 transition">
+              Copiar Resumen
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <button onclick="editCurrentGuestMenu()" class="rounded-2xl border border-white/20 bg-white/5 hover:bg-white/10 px-5 py-3 text-xs font-semibold text-creamSoft transition">
+            Modificar mi Elección
+          </button>
+          <button onclick="goHome()" class="btn-gold rounded-2xl px-6 py-3 text-xs font-bold">
+            Volver a Selección de Familiar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 4: PANEL DE ÁNGEL (ANFITRIÓN / RESUMEN Y CARTA 24 DIC) -->
+    <section id="view-host" class="hidden fade-in space-y-8">
+      <div class="liquid-glass rounded-3xl p-6 sm:p-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+          <div>
+            <span class="text-xs uppercase tracking-[0.22em] text-amber-300 font-semibold">Centro de Control del Chef Anfitrión</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-creamSoft mt-1">Panel de Ángel Iván · Cena de Navidad</h2>
+            <p class="text-xs sm:text-sm text-stone-300/85 mt-1">
+              Seguimiento en tiempo real de los 7 familiares, envío consolidado a <span class="text-amber-200 font-medium">hernandezanguianoivangamers@gmail.com</span> y programación de carta navideña.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2.5">
+            <a id="host-mailto-btn" href="#" class="btn-gold rounded-2xl px-5 py-3 text-xs font-bold inline-flex items-center gap-2">
+              Enviar Resumen a mi Correo
+            </a>
+            <button onclick="copyConsolidatedReport()" class="rounded-2xl border border-amber-300/35 bg-white/5 hover:bg-white/10 px-4 py-3 text-xs font-semibold text-amber-200 transition">
+              Copiar Reporte
+            </button>
+            <button onclick="goHome()" class="rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-3 text-xs font-semibold text-stone-200 transition">
+              Ir al Menú
+            </button>
+          </div>
+        </div>
+
+        <!-- Contador regresivo hacia el 24 de diciembre a las 11:59 PM -->
+        <div class="mt-7 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="liquid-glass-subtle rounded-2xl p-5 flex flex-col justify-between">
+            <span class="text-[11px] uppercase tracking-wider text-sageAccent font-semibold">Progreso Familiar</span>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span id="host-count-big" class="font-serif text-4xl font-bold gold-gradient-text">0 / 7</span>
+              <span class="text-xs text-stone-300">han elegido su menú</span>
+            </div>
+            <div class="mt-3 h-2 w-full rounded-full bg-emerald-950 overflow-hidden">
+              <div id="host-progress-bar" class="h-full bg-gradient-to-r from-amber-400 to-amber-200 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 liquid-glass-subtle rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-amber-300/25">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-amber-300 animate-ping"></span>
+                <span class="text-[11px] uppercase tracking-wider text-amber-300 font-semibold">Disparo Programado · 24 de Diciembre, 11:59 PM</span>
+              </div>
+              <p class="mt-1.5 font-serif text-lg sm:text-xl font-semibold text-creamSoft" id="countdown-display">
+                Calculando cuenta regresiva...
+              </p>
+              <p class="mt-1 text-xs text-stone-300/80 leading-relaxed">
+                Si esta pestaña permanece abierta el 24 de diciembre a las 11:59 PM, se ejecutará automáticamente el envío de la carta de agradecimiento a todos los correos registrados. También puedes enviarla manualmente en cualquier momento.
+              </p>
+            </div>
+            <a id="send-gratitude-now-btn" href="#" onclick="markGratitudeDispatched()" class="shrink-0 rounded-2xl border border-amber-300/45 bg-amber-400/15 hover:bg-amber-400/25 px-4 py-3 text-xs font-bold text-amber-200 text-center transition">
+              Enviar Carta de Agradecimiento Ahora
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla / Tarjetas de Elecciones de los 7 Familiares -->
+      <div class="liquid-glass rounded-3xl p-6 sm:p-8">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <h3 class="font-serif text-xl sm:text-2xl font-semibold text-creamSoft">Elecciones por Integrante de la Familia</h3>
+          <span class="text-xs text-sageAccent">Sincronizado en tiempo real</span>
+        </div>
+        <div id="host-family-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Vista Previa de la Carta de Agradecimiento de Ángel (24 de Diciembre 11:59 PM) -->
+      <div class="liquid-glass rounded-3xl p-6 sm:p-9 border border-amber-300/30">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div>
+            <span class="text-xs uppercase tracking-[0.2em] text-amber-300 font-semibold">Carta Navideña Programada · 24 Dic 11:59 PM</span>
+            <h3 class="font-serif text-xl sm:text-2xl font-semibold text-creamSoft mt-0.5">Palabras de Agradecimiento de Ángel para su Familia</h3>
+          </div>
+          <button onclick="copyGratitudeLetter()" class="rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-creamSoft transition">
+            Copiar Carta
+          </button>
+        </div>
+
+        <div class="rounded-2xl bg-emerald-950/75 border border-amber-300/20 p-6 sm:p-8 font-serif text-sm sm:text-base text-stone-200 leading-relaxed whitespace-pre-line" id="gratitude-letter-preview"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const HOST_EMAIL = "hernandezanguianoivangamers@gmail.com";
+    const STORAGE_KEY = "navidad_alta_cocina_selections_v1";
+
+    const FAMILY_MEMBERS = [
+      { id: "yessenia", fullName: "Yessenia Hernandez Anguiano", firstName: "Yessenia", role: "Familia" },
+      { id: "zuleyma", fullName: "Zuleyma Hernandez Anguiano", firstName: "Zuleyma", role: "Familia" },
+      { id: "damian", fullName: "Damian Isaac Araiza Hernandez", firstName: "Damian", role: "Familia" },
+      { id: "maricela", fullName: "Maricela Anguiano Cervantes", firstName: "Maricela", role: "Familia" },
+      { id: "angel", fullName: "Angel Ivan Hernandez Anguiano", firstName: "Angel", role: "Chef Anfitrión" },
+      { id: "kevin", fullName: "Kevin Solon Araiza Soberanis", firstName: "Kevin", role: "Familia" },
+      { id: "lazaro", fullName: "Lazaro Hernandez Valencia", firstName: "Lazaro", role: "Familia" }
+    ];
+
+    const MENU_DATA = {
+      starters: [
+        {
+          id: "ent-1",
+          name: "Carpaccio de Res con Parmesano Reggiano y Trufa Negra",
+          cuisine: "Italiana",
+          description: "Finas láminas de solomillo sellado al romero, lascas de Parmigiano-Reggiano de 24 meses, aceite de trufa negra y brotes de arúgula.",
+          ingredients: "Solomillo Prime · Parmesano 24M · Trufa Negra · Piñones"
+        },
+        {
+          id: "ent-2",
+          name: "Soupe à l'Oignon Gratinée con Gruyère Añejo",
+          cuisine: "Francesa",
+          description: "Clásica sopa francesa de cebollas caramelizadas lentamente en fondo oscuro de res, coronada con crostini de baguette y queso Gruyère gratinado.",
+          ingredients: "Cebolla Caramelizada · Caldo Oscuro · Gruyère Suizo · Tomillo"
+        },
+        {
+          id: "ent-3",
+          name: "Tartar de Atún Aleta Azul sobre Tostada de Maíz Azul y Aguacate Tatemado",
+          cuisine: "Alta Cocina Mexicana",
+          description: "Cubos frescos de atún aleta azul marinados en emulsión de cítricos y chile serrano tatemado, sobre tostada crocante de maíz criollo.",
+          ingredients: "Atún Aleta Azul · Maíz Azul · Aguacate Tatemado · Ponzu Cítrico"
+        },
+        {
+          id: "ent-4",
+          name: "Foie Gras Sellado con Reducción de Higos y Brioche Tostado",
+          cuisine: "Gourmet",
+          description: "Medallón de foie gras dorado a la perfección, acompañado de compota tibia de higos negros al Oporto y pan brioche artesanal.",
+          ingredients: "Foie Gras · Reducción de Oporto e Higo · Brioche · Flor de Sal"
+        },
+        {
+          id: "ent-5",
+          name: "Burrata Artesanal con Tomates Heirloom Confitados y Pesto de Pistache",
+          cuisine: "Italiana",
+          description: "Cremosa burrata fresca servida sobre tomates reliquia confitados al ajo dulce, pesto verde de pistache tostado y reducción balsámica.",
+          ingredients: "Burrata Fresca · Tomate Heirloom · Pesto de Pistache · Albahaca"
+        },
+        {
+          id: "ent-6",
+          name: "Tetela de Pato Confitado con Mole Negro Oaxaqueño y Crema de Rancho",
+          cuisine: "Alta Cocina Mexicana",
+          description: "Triángulo de masa nixtamalizada relleno de pato confitado y frijol negro, bañado en mole negro tradicional y queso fresco artesanal.",
+          ingredients: "Pato Confitado · Mole Negro · Masa Criolla · Crema Ácida"
+        }
+      ],
+      mains: [
+        {
+          id: "fuerte-1",
+          name: "Filete Wellington en Hojaldre Dorado con Duxelles de Champiñones y Salsa de Vino Tinto",
+          cuisine: "Gourmet",
+          description: "Corazón de filete de res envuelto en duxelles de hongos silvestres, jamón serrano y hojaldre crujiente con reducción de Cabernet.",
+          ingredients: "Corazón de Filete · Hojaldre Francés · Duxelles · Demi-Glace"
+        },
+        {
+          id: "fuerte-2",
+          name: "Ossobuco a la Milanesa con Risotto al Azafrán",
+          cuisine: "Italiana",
+          description: "Chambarete de ternera braseado lentamente en vino blanco y vegetales aromáticos, servido sobre cremoso risotto alla Milanese y gremolata.",
+          ingredients: "Ternera Braseada · Risotto Carnaroli · Azafrán · Gremolata"
+        },
+        {
+          id: "fuerte-3",
+          name: "Magret de Pato a la Naranja con Puré de Papa Trufado y Espárragos",
+          cuisine: "Francesa",
+          description: "Pechuga de pato de piel crujiente y término jugoso con salsa gastrique de naranja caramelizada, puré sedoso y espárragos baby.",
+          ingredients: "Magret de Pato · Salsa Bigarade · Puré Trufado · Espárragos"
+        },
+        {
+          id: "fuerte-4",
+          name: "Short Rib Braseado en Recado Negro y Salsa de Xoconostle con Puré de Camote",
+          cuisine: "Alta Cocina Mexicana",
+          description: "Costilla cargada cocinada por 12 horas en recado negro yucateco, glaseada en su jugo con notas ácidas de xoconostle y puré de camote amarillo.",
+          ingredients: "Short Rib 12h · Recado Negro · Xoconostle · Puré de Camote"
+        },
+        {
+          id: "fuerte-5",
+          name: "Salmón Glaseado en Mantequilla Avellanada, Alcaparras y Risotto de Limón",
+          cuisine: "Gourmet",
+          description: "Lomo de salmón sellado a la plancha bañado en beurre noisette, alcaparras crujientes y acompañado de risotto cítrico al limón amarillo.",
+          ingredients: "Salmón Atlántico · Mantequilla Noisette · Alcaparras · Risotto"
+        },
+        {
+          id: "fuerte-6",
+          name: "Filete Mignon en Salsa Bordelesa con Gratin Dauphinois",
+          cuisine: "Francesa",
+          description: "Medallón grueso de filete de res sellado a la mantequilla con reducción bordelesa de tuétano y pastel de papas gratinadas a la crema.",
+          ingredients: "Filete Mignon · Salsa Bordelesa · Gratin Dauphinois · Chalotes"
+        }
+      ],
+      desserts: [
+        {
+          id: "postre-1",
+          name: "Tiramisú Clásico al Mascarpone con Cacao Valrhona y Espresso",
+          cuisine: "Italiana",
+          description: "Capas aireadas de crema de queso mascarpone italiano y bizcochos savoiardi humedecidos en café espresso intenso y licor amaretto.",
+          ingredients: "Mascarpone · Espresso Intenso · Cacao Valrhona · Savoiardi"
+        },
+        {
+          id: "postre-2",
+          name: "Crème Brûlée de Vainilla de Papantla con Frutos Rojos",
+          cuisine: "Francesa",
+          description: "Natilla sedosa infusionada con vaina natural de vainilla de Papantla, costra crujiente de azúcar caramelizada al soplete y frutos del bosque.",
+          ingredients: "Vainilla de Papantla · Crema Fresca · Caramelo Crujiente · Frambuesas"
+        },
+        {
+          id: "postre-3",
+          name: "Esfera de Chocolate Amargo Oaxaqueño con Mousse de Mezcal y Caramelo Salado",
+          cuisine: "Alta Cocina Mexicana",
+          description: "Esfera de cacao 70% que se funde al servir caramelo tibio, revelando un suave mousse de chocolate oaxaqueño con notas sutiles de mezcal.",
+          ingredients: "Cacao Oaxaqueño 70% · Mousse de Mezcal · Caramelo Salado"
+        },
+        {
+          id: "postre-4",
+          name: "Fondant de Chocolate Belga con Helado de Vainilla Bourbon",
+          cuisine: "Gourmet",
+          description: "Bizcocho tibio de chocolate belga oscuro con centro líquido fundente, acompañado de quenelle de helado artesanal de vainilla Bourbon.",
+          ingredients: "Chocolate Belga · Centro Fundente · Helado Vainilla Bourbon"
+        },
+        {
+          id: "postre-5",
+          name: "Panna Cotta de Lavanda y Miel con Coulis de Frambuesa",
+          cuisine: "Italiana",
+          description: "Delicada panna cotta perfumada con flores de lavanda y miel de azahar, coronada con salsa fresca de frambuesa y crocante de almendra.",
+          ingredients: "Crema Panna Cotta · Miel y Lavanda · Coulis de Frambuesa"
+        },
+        {
+          id: "postre-6",
+          name: "Tartaleta Tatin de Manzana Caramelizada con Crema Chantilly",
+          cuisine: "Francesa",
+          description: "Manzanas horneadas en caramelo de mantequilla salada sobre base hojaldrada tibia, servida con crema Chantilly batida al momento.",
+          ingredients: "Manzana Caramelizada · Hojaldre · Mantequilla Salada · Chantilly"
+        }
+      ]
+    };
+
+    const GRATITUDE_LETTER = `Querida familia:
+
+Hoy, en esta Nochebuena, quiero tomarme un momento para darles las gracias desde lo más profundo de mi corazón.
+
+Gracias por estar aquí, por caminar juntos un año más y por ser el motor y el refugio más grande de mi vida. Cada platillo que elegiste en este menú fue pensado, preparado y cocinado personalmente por mí con todo el cariño, el respeto y la dedicación que merecen, porque cocinar para ustedes es mi forma más sincera de decirles cuánto los amo.
+
+Deseo que esta Navidad nos encuentre siempre unidos, con salud, alegría y muchos motivos para seguir compartiendo la mesa juntos por muchos años más.
+
+¡Feliz Navidad a cada uno de ustedes!
+
+Con todo mi amor y gratitud,
+Ángel Iván Hernández Anguiano`;
+
+    // Estado de la aplicación
+    let state = {
+      selectedGuestId: null,
+      cuisineFilter: "Todas",
+      currentDraft: {
+        starterId: null,
+        mainId: null,
+        dessertId: null,
+        email: ""
+      },
+      savedSelections: {},
+      isHostView: false,
+      autoLetterSentThisSession: false
+    };
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    const appId = typeof __app_id !== "undefined" ? __app_id : "cena-navidad-angel";
+
+    // Cargar respaldo local inicial
+    function loadLocalSelections() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          state.savedSelections = JSON.parse(raw);
+        }
+      } catch (e) {
+        console.warn("No se pudo leer almacenamiento local:", e);
+      }
+    }
+
+    function saveLocalSelections() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedSelections));
+      } catch (e) {
+        console.warn("No se pudo guardar localmente:", e);
+      }
+    }
+
+    // Inicializar Firebase si está disponible en el entorno
+    async function initCloudSync() {
+      loadLocalSelections();
+      refreshAllUI();
+
+      try {
+        if (typeof __firebase_config !== "undefined" && __firebase_config) {
+          const firebaseConfig = JSON.parse(__firebase_config);
+          const app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
+
+          if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUser = cred.user;
+          } else {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+          }
+
+          if (currentUser && db) {
+            const colRef = collection(db, "artifacts", appId, "public", "data", "christmas_menu_choices");
+            onSnapshot(
+              colRef,
+              (snapshot) => {
+                snapshot.forEach((docSnap) => {
+                  const data = docSnap.data();
+                  if (data && data.guestId) {
+                    state.savedSelections[data.guestId] = data;
+                  }
+                });
+                saveLocalSelections();
+                refreshAllUI();
+              },
+              (err) => {
+                console.warn("Sincronización en nube en modo respaldo local:", err.message);
+              }
+            );
+          }
+        }
+      } catch (err) {
+        console.warn("Operando con almacenamiento local:", err.message);
+      }
+    }
+
+    async function persistGuestSelection(record) {
+      state.savedSelections[record.guestId] = record;
+      saveLocalSelections();
+
+      if (db && currentUser) {
+        try {
+          const docRef = doc(db, "artifacts", appId, "public", "data", "christmas_menu_choices", record.guestId);
+          await setDoc(docRef, record);
+        } catch (err) {
+          console.warn("Guardado en nube pendiente, mantenido localmente:", err.message);
+        }
+      }
+    }
+
+    // Helpers de búsqueda de platillos
+    function findDish(category, id) {
+      return MENU_DATA[category].find((item) => item.id === id) || null;
+    }
+
+    function showToast(title, msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toast-title").textContent = title;
+      document.getElementById("toast-msg").textContent = msg;
+      toast.classList.remove("hidden");
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 4500);
+    }
+
+    // Navegación
+    window.goHome = function () {
+      state.isHostView = false;
+      state.selectedGuestId = null;
+      document.getElementById("view-selector").classList.remove("hidden");
+      document.getElementById("view-menu").classList.add("hidden");
+      document.getElementById("view-confirmation").classList.add("hidden");
+      document.getElementById("view-host").classList.add("hidden");
+      document.getElementById("btn-switch-guest").classList.add("hidden");
+      document.getElementById("host-btn-label").textContent = "Panel de Ángel";
+      renderGuestSelector();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.toggleHostView = function () {
+      state.isHostView = !state.isHostView;
+      if (state.isHostView) {
+        document.getElementById("view-selector").classList.add("hidden");
+        document.getElementById("view-menu").classList.add("hidden");
+        document.getElementById("view-confirmation").classList.add("hidden");
+        document.getElementById("view-host").classList.remove("hidden");
+        document.getElementById("btn-switch-guest").classList.remove("hidden");
+        document.getElementById("host-btn-label").textContent = "Cerrar Panel";
+        renderHostPanel();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        goHome();
+      }
+    };
+
+    window.selectGuest = function (guestId) {
+      const guest = FAMILY_MEMBERS.find((m) => m.id === guestId);
+      if (!guest) return;
+
+      state.selectedGuestId = guestId;
+      state.isHostView = false;
+      state.cuisineFilter = "Todas";
+
+      const existing = state.savedSelections[guestId];
+      if (existing) {
+        state.currentDraft = {
+          starterId: existing.starterId,
+          mainId: existing.mainId,
+          dessertId: existing.dessertId,
+          email: existing.email || ""
+        };
+      } else {
+        state.currentDraft = {
+          starterId: null,
+          mainId: null,
+          dessertId: null,
+          email: ""
+        };
+      }
+
+      document.getElementById("welcome-headline").textContent =
+        `Hola ${guest.firstName}, Bienvenido a la alta cocina para la cena de navidad`;
+      document.getElementById("welcome-full-name").textContent =
+        `Invitado: ${guest.fullName}`;
+      document.getElementById("guest-email").value = state.currentDraft.email;
+
+      updateFilterButtonsUI();
+      renderAllMenuGrids();
+      updateDraftSummaryUI();
+
+      document.getElementById("view-selector").classList.add("hidden");
+      document.getElementById("view-confirmation").classList.add("hidden");
+      document.getElementById("view-host").classList.add("hidden");
+      document.getElementById("view-menu").classList.remove("hidden");
+      document.getElementById("btn-switch-guest").classList.remove("hidden");
+      document.getElementById("host-btn-label").textContent = "Panel de Ángel";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.editCurrentGuestMenu = function () {
+      if (state.selectedGuestId) {
+        selectGuest(state.selectedGuestId);
+      }
+    };
+
+    // Renderizado de tarjetas de los 7 familiares
+    function renderGuestSelector() {
+      const grid = document.getElementById("guest-grid");
+      grid.innerHTML = "";
+
+      FAMILY_MEMBERS.forEach((member) => {
+        const saved = state.savedSelections[member.id];
+        const isCompleted = Boolean(saved);
+
+        const card = document.createElement("button");
+        card.type = "button";
+        card.onclick = () => selectGuest(member.id);
+        card.className = `dish-card liquid-glass rounded-3xl p-5 sm:p-6 text-left flex flex-col justify-between group cursor-pointer ${
+          isCompleted ? "border-emerald-400/45" : ""
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-300/20 to-emerald-500/10 border border-amber-300/30 font-serif text-xl font-bold text-amber-200 group-hover:scale-105 transition">
+              ${member.firstName.charAt(0)}
+            </div>
+            ${
+              isCompleted
+                ? `<span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-3 py-1 text-[11px] font-semibold text-emerald-200">
+                    <span>✓</span> Menú Listo
+                   </span>`
+                : `<span class="inline-flex items-center rounded-full bg-amber-400/10 border border-amber-300/25 px-3 py-1 text-[11px] font-medium text-amber-200/90">
+                    Pendiente
+                   </span>`
+            }
+          </div>
+
+          <div class="mt-5">
+            <p class="text-[11px] uppercase tracking-wider text-sageAccent font-semibold">${member.role}</p>
+            <h3 class="mt-0.5 font-serif text-lg sm:text-xl font-semibold text-creamSoft group-hover:text-amber-200 transition">
+              ${member.fullName}
+            </h3>
+          </div>
+
+          <div class="mt-5 pt-3.5 border-t border-white/10 flex items-center justify-between text-xs">
+            <span class="text-stone-300/80">${isCompleted ? "Ver o editar elección" : "Entrar y elegir menú"}</span>
+            <span class="text-amber-300 font-semibold group-hover:translate-x-1 transition">→</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // Filtros de cocina
+    window.setCuisineFilter = function (cuisine) {
+      state.cuisineFilter = cuisine;
+      updateFilterButtonsUI();
+      renderAllMenuGrids();
+    };
+
+    function updateFilterButtonsUI() {
+      document.querySelectorAll(".filter-pill").forEach((btn) => {
+        const isMatch = btn.getAttribute("data-filter") === state.cuisineFilter;
+        if (isMatch) {
+          btn.className = "filter-pill active rounded-full px-4 py-1.5 text-xs font-bold bg-amber-400 text-emeraldDeep transition shadow";
+        } else {
+          btn.className = "filter-pill rounded-full px-4 py-1.5 text-xs font-medium bg-white/5 text-stone-200 hover:bg-white/10 border border-white/10 transition";
+        }
+      });
+    }
+
+    function getCuisineBadgeStyle(cuisine) {
+      switch (cuisine) {
+        case "Italiana":
+          return "bg-emerald-500/15 text-emerald-200 border-emerald-400/30";
+        case "Francesa":
+          return "bg-sky-500/15 text-sky-200 border-sky-400/30";
+        case "Alta Cocina Mexicana":
+          return "bg-rose-500/15 text-rose-200 border-rose-400/30";
+        default:
+          return "bg-amber-400/15 text-amber-200 border-amber-300/35";
+      }
+    }
+
+    function renderMenuCategory(categoryKey, gridId, draftField) {
+      const container = document.getElementById(gridId);
+      container.innerHTML = "";
+
+      const dishes = MENU_DATA[categoryKey].filter((dish) => {
+        if (state.cuisineFilter === "Todas") return true;
+        return dish.cuisine === state.cuisineFilter;
+      });
+
+      dishes.forEach((dish) => {
+        const isSelected = state.currentDraft[draftField] === dish.id;
+        const card = document.createElement("div");
+        card.onclick = () => selectDish(draftField, dish.id);
+        card.className = `dish-card liquid-glass rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer ${
+          isSelected ? "selected" : ""
+        }`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3.5">
+              <span class="rounded-full border px-3 py-1 text-[11px] font-semibold ${getCuisineBadgeStyle(dish.cuisine)}">
+                ${dish.cuisine}
+              </span>
+              <span class="flex h-6 w-6 items-center justify-center rounded-full border ${
+                isSelected
+                  ? "border-amber-300 bg-amber-400 text-emeraldDeep font-bold text-xs"
+                  : "border-white/25 bg-white/5 text-transparent"
+              }">
+                ✓
+              </span>
+            </div>
+
+            <h4 class="font-serif text-lg font-semibold text-creamSoft leading-snug">
+              ${dish.name}
+            </h4>
+            <p class="mt-2.5 text-xs sm:text-sm text-stone-300/90 leading-relaxed">
+              ${dish.description}
+            </p>
+          </div>
+
+          <div class="mt-5 pt-3.5 border-t border-white/10">
+            <p class="text-[11px] text-sageAccent font-medium">${dish.ingredients}</p>
+            <div class="mt-2.5 flex items-center justify-between">
+              <span class="text-xs font-semibold ${isSelected ? "text-amber-300" : "text-stone-400"}">
+                ${isSelected ? "✦ Platillo Seleccionado" : "Tocar para elegir"}
+              </span>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderAllMenuGrids() {
+      renderMenuCategory("starters", "grid-starters", "starterId");
+      renderMenuCategory("mains", "grid-mains", "mainId");
+      renderMenuCategory("desserts", "grid-desserts", "dessertId");
+    }
+
+    function selectDish(field, dishId) {
+      state.currentDraft[field] = dishId;
+      renderAllMenuGrids();
+      updateDraftSummaryUI();
+    }
+
+    function updateDraftSummaryUI() {
+      const starter = findDish("starters", state.currentDraft.starterId);
+      const main = findDish("mains", state.currentDraft.mainId);
+      const dessert = findDish("desserts", state.currentDraft.dessertId);
+
+      document.getElementById("status-starter").textContent = starter ? starter.name : "Pendiente";
+      document.getElementById("status-starter").className = starter
+        ? "font-semibold text-emerald-300 truncate max-w-[155px]"
+        : "font-medium text-amber-200/70 truncate max-w-[155px]";
+
+      document.getElementById("status-main").textContent = main ? main.name : "Pendiente";
+      document.getElementById("status-main").className = main
+        ? "font-semibold text-emerald-300 truncate max-w-[155px]"
+        : "font-medium text-amber-200/70 truncate max-w-[155px]";
+
+      document.getElementById("status-dessert").textContent = dessert ? dessert.name : "Pendiente";
+      document.getElementById("status-dessert").className = dessert
+        ? "font-semibold text-emerald-300 truncate max-w-[155px]"
+        : "font-medium text-amber-200/70 truncate max-w-[155px]";
+
+      document.getElementById("badge-starter").textContent = starter ? "✓ Entrada elegida" : "Elige 1 opción";
+      document.getElementById("badge-main").textContent = main ? "✓ Plato fuerte elegido" : "Elige 1 opción";
+      document.getElementById("badge-dessert").textContent = dessert ? "✓ Postre elegido" : "Elige 1 opción";
+
+      document.getElementById("summary-starter").textContent = starter ? starter.name : "Aún sin seleccionar";
+      document.getElementById("summary-starter-tag").textContent = starter ? starter.cuisine : "";
+
+      document.getElementById("summary-main").textContent = main ? main.name : "Aún sin seleccionar";
+      document.getElementById("summary-main-tag").textContent = main ? main.cuisine : "";
+
+      document.getElementById("summary-dessert").textContent = dessert ? dessert.name : "Aún sin seleccionar";
+      document.getElementById("summary-dessert-tag").textContent = dessert ? dessert.cuisine : "";
+    }
+
+    // Confirmación del menú del invitado
+    window.handleConfirmMenu = async function (event) {
+      event.preventDefault();
+
+      const guest = FAMILY_MEMBERS.find((m) => m.id === state.selectedGuestId);
+      if (!guest) return;
+
+      const starter = findDish("starters", state.currentDraft.starterId);
+      const main = findDish("mains", state.currentDraft.mainId);
+      const dessert = findDish("desserts", state.currentDraft.dessertId);
+      const emailInput = document.getElementById("guest-email").value.trim();
+
+      if (!starter || !main || !dessert) {
+        showToast("Falta elegir un tiempo", "Por favor selecciona 1 Entrada, 1 Plato Fuerte y 1 Postre antes de confirmar.");
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailInput)) {
+        showToast("Correo inválido", "Por favor ingresa una dirección de correo electrónico válida.");
+        return;
+      }
+
+      const record = {
+        guestId: guest.id,
+        fullName: guest.fullName,
+        firstName: guest.firstName,
+        starterId: starter.id,
+        starterName: starter.name,
+        starterCuisine: starter.cuisine,
+        mainId: main.id,
+        mainName: main.name,
+        mainCuisine: main.cuisine,
+        dessertId: dessert.id,
+        dessertName: dessert.name,
+        dessertCuisine: dessert.cuisine,
+        email: emailInput,
+        confirmedAt: new Date().toISOString()
+      };
+
+      await persistGuestSelection(record);
+      refreshAllUI();
+
+      // Mostrar pantalla de confirmación
+      document.getElementById("conf-title").textContent = `¡Gracias, ${guest.firstName}!`;
+      document.getElementById("conf-message").textContent =
+        `Tu menú ha quedado registrado para que Ángel te lo cocine personalmente esta Navidad. El 24 de diciembre a las 11:59 PM recibirás en ${emailInput} una carta especial de agradecimiento escrita por Ángel.`;
+      document.getElementById("conf-starter").textContent = `${starter.name} (${starter.cuisine})`;
+      document.getElementById("conf-main").textContent = `${main.name} (${main.cuisine})`;
+      document.getElementById("conf-dessert").textContent = `${dessert.name} (${dessert.cuisine})`;
+      document.getElementById("conf-email").textContent = emailInput;
+
+      const completedCount = Object.keys(state.savedSelections).length;
+      const allSevenBanner = document.getElementById("all-seven-banner");
+      if (completedCount >= FAMILY_MEMBERS.length) {
+        allSevenBanner.classList.remove("hidden");
+        document.getElementById("conf-mailto-angel").href = buildAngelConsolidatedMailto();
+      } else {
+        allSevenBanner.classList.add("hidden");
+      }
+
+      document.getElementById("view-menu").classList.add("hidden");
+      document.getElementById("view-confirmation").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("¡Menú confirmado!", `Las elecciones de ${guest.firstName} han sido guardadas.`);
+    };
+
+    // Generación de reportes y correos
+    function buildConsolidatedReportText() {
+      const completedCount = Object.keys(state.savedSelections).length;
+      let lines = [
+        "CENA DE NAVIDAD - ALTA COCINA (RESUMEN FAMILIAR)",
+        `Estado: ${completedCount} de ${FAMILY_MEMBERS.length} familiares confirmados`,
+        "==================================================",
+        ""
+      ];
+
+      FAMILY_MEMBERS.forEach((member, idx) => {
+        const sel = state.savedSelections[member.id];
+        lines.push(`${idx + 1}. ${member.fullName}`);
+        if (sel) {
+          lines.push(`   • Correo: ${sel.email}`);
+          lines.push(`   • Entrada: ${sel.starterName} [${sel.starterCuisine}]`);
+          lines.push(`   • Plato Fuerte: ${sel.mainName} [${sel.mainCuisine}]`);
+          lines.push(`   • Postre: ${sel.dessertName} [${sel.dessertCuisine}]`);
+        } else {
+          lines.push("   • Estado: Pendiente de elegir su menú");
+        }
+        lines.push("");
+      });
+
+      lines.push("==================================================");
+      lines.push("Listo para cocinar personalmente con cariño · Chef Ángel Iván");
+      return lines.join("\n");
+    }
+
+    function buildAngelConsolidatedMailto() {
+      const subject = encodeURIComponent("Menú Cena de Navidad - Elecciones de toda la familia (7/7)");
+      const body = encodeURIComponent(buildConsolidatedReportText());
+      return `mailto:${HOST_EMAIL}?subject=${subject}&body=${body}`;
+    }
+
+    function buildGratitudeMailtoAllFamily() {
+      const emails = FAMILY_MEMBERS
+        .map((m) => state.savedSelections[m.id]?.email)
+        .filter(Boolean);
+      const uniqueEmails = [...new Set(emails)];
+      const toField = uniqueEmails.join(",");
+      const subject = encodeURIComponent("Feliz Navidad Familia · Unas palabras de agradecimiento de Ángel");
+      const body = encodeURIComponent(GRATITUDE_LETTER);
+      return `mailto:${toField}?subject=${subject}&body=${body}`;
+    }
+
+    window.copyConsolidatedReport = function () {
+      const text = buildConsolidatedReportText();
+      copyTextFallback(text, "Resumen copiado", "El reporte completo de platillos y correos se copió al portapapeles.");
+    };
+
+    window.copyGratitudeLetter = function () {
+      copyTextFallback(GRATITUDE_LETTER, "Carta copiada", "El mensaje de agradecimiento de Ángel se copió al portapapeles.");
+    };
+
+    function copyTextFallback(text, title, msg) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        showToast(title, msg);
+      } catch (e) {
+        showToast("Aviso", "Selecciona y copia el texto manualmente.");
+      }
+      document.body.removeChild(textarea);
+    }
+
+    window.markGratitudeDispatched = function () {
+      showToast("Abriendo cliente de correo", "Se preparó la carta de agradecimiento de Ángel para todos los correos registrados.");
+    };
+
+    // Renderizado del Panel de Ángel
+    function renderHostPanel() {
+      const completedCount = Object.keys(state.savedSelections).length;
+      const pct = Math.round((completedCount / FAMILY_MEMBERS.length) * 100);
+
+      document.getElementById("host-count-big").textContent = `${completedCount} / ${FAMILY_MEMBERS.length}`;
+      document.getElementById("host-progress-bar").style.width = `${pct}%`;
+      document.getElementById("host-mailto-btn").href = buildAngelConsolidatedMailto();
+      document.getElementById("send-gratitude-now-btn").href = buildGratitudeMailtoAllFamily();
+      document.getElementById("gratitude-letter-preview").textContent = GRATITUDE_LETTER;
+
+      const listContainer = document.getElementById("host-family-list");
+      listContainer.innerHTML = "";
+
+      FAMILY_MEMBERS.forEach((member) => {
+        const sel = state.savedSelections[member.id];
+        const card = document.createElement("div");
+        card.className = "rounded-2xl bg-emerald-950/65 border border-white/10 p-5 flex flex-col justify-between";
+
+        if (sel) {
+          card.innerHTML = `
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="font-serif text-base sm:text-lg font-semibold text-creamSoft">${member.fullName}</h4>
+                  <p class="text-xs text-amber-300 mt-0.5">${sel.email}</p>
+                </div>
+                <span class="rounded-full bg-emerald-500/20 border border-emerald-400/35 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-200">
+                  Confirmado
+                </span>
+              </div>
+              <ul class="mt-4 space-y-1.5 text-xs text-stone-200 border-t border-white/10 pt-3">
+                <li><span class="text-sageAccent font-semibold">Entrada:</span> ${sel.starterName}</li>
+                <li><span class="text-sageAccent font-semibold">Fuerte:</span> ${sel.mainName}</li>
+                <li><span class="text-sageAccent font-semibold">Postre:</span> ${sel.dessertName}</li>
+              </ul>
+            </div>
+            <div class="mt-4 pt-2.5 border-t border-white/5 flex justify-end">
+              <button onclick="selectGuest('${member.id}')" class="text-[11px] font-semibold text-amber-200 hover:underline">
+                Editar elección →
+              </button>
+            </div>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h4 class="font-serif text-base font-semibold text-stone-300">${member.fullName}</h4>
+                <p class="text-xs text-stone-400 mt-1">Aún no ha seleccionado sus platillos ni registrado su correo.</p>
+              </div>
+              <span class="rounded-full bg-white/5 border border-white/15 px-2.5 py-0.5 text-[11px] text-stone-400">
+                Pendiente
+              </span>
+            </div>
+            <div class="mt-4 pt-2.5 border-t border-white/5 flex justify-end">
+              <button onclick="selectGuest('${member.id}')" class="text-[11px] font-semibold text-sageAccent hover:text-amber-200">
+                Llenar por ${member.firstName} →
+              </button>
+            </div>
+          `;
+        }
+
+        listContainer.appendChild(card);
+      });
+    }
+
+    function refreshAllUI() {
+      const completedCount = Object.keys(state.savedSelections).length;
+      document.getElementById("header-progress-text").textContent = `${completedCount} de ${FAMILY_MEMBERS.length} familiares listos`;
+      document.getElementById("family-count-badge").textContent = `${completedCount}/${FAMILY_MEMBERS.length}`;
+
+      if (completedCount >= FAMILY_MEMBERS.length) {
+        document.getElementById("family-status-sub").textContent =
+          "¡Todos han elegido! El resumen consolidado está listo para enviarse a Ángel.";
+      } else {
+        document.getElementById("family-status-sub").textContent =
+          `Faltan ${FAMILY_MEMBERS.length - completedCount} integrantes por elegir su menú navideño.`;
+      }
+
+      renderGuestSelector();
+      if (state.isHostView) {
+        renderHostPanel();
+      }
+    }
+
+    // Reloj y cuenta regresiva hacia el 24 de diciembre a las 11:59 PM
+    function updateChristmasCountdown() {
+      const now = new Date();
+      let targetYear = now.getFullYear();
+      let target = new Date(targetYear, 11, 24, 23, 59, 0);
+
+      // Si ya pasó el 25 de diciembre, apuntar al próximo año
+      if (now > new Date(targetYear, 11, 25, 23, 59, 59)) {
+        target = new Date(targetYear + 1, 11, 24, 23, 59, 0);
+      }
+
+      const diff = target - now;
+      const el = document.getElementById("countdown-display");
+      if (!el) return;
+
+      if (diff <= 0) {
+        el.textContent = "¡Es 24 de Diciembre, 11:59 PM! Hora del mensaje navideño";
+        if (!state.autoLetterSentThisSession && Object.keys(state.savedSelections).length > 0) {
+          state.autoLetterSentThisSession = true;
+          showToast(
+            "¡Llegó la hora navideña (11:59 PM)!",
+            "Se ha activado el envío de la carta de agradecimiento de Ángel a toda la familia."
+          );
+          const link = document.getElementById("send-gratitude-now-btn");
+          if (link && link.href && link.href.startsWith("mailto:")) {
+            window.location.href = link.href;
+          }
+        }
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      el.textContent = `Faltan ${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+    }
+
+    // Partículas sutiles navideñas
+    function createAmbientSnow() {
+      const container = document.getElementById("snow-container");
+      const symbols = ["✦", "·", "❄"];
+      for (let i = 0; i < 18; i++) {
+        const flake = document.createElement("div");
+        flake.className = "snowflake";
+        flake.textContent = symbols[i % symbols.length];
+        flake.style.left = `${Math.random() * 100}vw`;
+        flake.style.fontSize = `${Math.random() * 10 + 8}px`;
+        flake.style.animationDuration = `${Math.random() * 14 + 12}s`;
+        flake.style.animationDelay = `${Math.random() * 10}s`;
+        container.appendChild(flake);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      createAmbientSnow();
+      initCloudSync();
+      updateChristmasCountdown();
+      setInterval(updateChristmasCountdown, 1000);
+    });
+  </script>
+</body>
+</html>
